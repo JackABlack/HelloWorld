@@ -3,4 +3,10 @@
     <string name="app_name">HelloWorld</string>
     <string name="aButton">我是按钮</string>
     <string name="textBox">说点啥</string>
+    <string name="normal">安全驾驶</string>
+    <string name="mainFunction">干点实事</string>
+
+    <string name="abnormal_2">危险驾驶情形2</string>
+    <string name="abnormal_3">危险驾驶情形3</string>
+    <string name="abnormal_4">危险驾驶情形4</string>
 </resources>

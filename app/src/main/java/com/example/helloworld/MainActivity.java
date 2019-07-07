@@ -24,6 +24,8 @@ import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Gallery;
@@ -133,6 +135,13 @@ class CameraActivity extends Activity {
     }
 }
 
+class Notify{
+    public void Notify(int eventID){
+        // 声音播放和文字改变代码于此做
+    }
+
+}
+
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "com.example.helloworld.MESSAGE";
     public static boolean doIt = true;
@@ -143,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
         // Here, thisActivity is the current activity
@@ -288,14 +299,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void clickButton(View view) {
-        //why not functional? Needs a public void class, very strict.
-        Intent intent = new Intent(this, DisplayMessageActivity.class);    // a new object, can send message from A to B, OVER ACTIVITIES! like a pipe
-        // the initiator's value is: 1.who starts the view; 2.who receives intent's call
-        EditText editText = (EditText) findViewById(R.id.editText);                         // editText is a kinda dataType, is used in activity_xxx.xml
-        String message = editText.getText().toString();
-        intent.putExtra(EXTRA_MESSAGE, message);                                             // function putExtra can
-        startActivity(intent);
-    }
+//    public void clickButton(View view) {
+//        //why not functional? Needs a public void class, very strict.
+//        Intent intent = new Intent(this, DisplayMessageActivity.class);    // a new object, can send message from A to B, OVER ACTIVITIES! like a pipe
+//        // the initiator's value is: 1.who starts the view; 2.who receives intent's call
+//        EditText editText = (EditText) findViewById(R.id.editText);                         // editText is a kinda dataType, is used in activity_xxx.xml
+//        String message = editText.getText().toString();
+//        intent.putExtra(EXTRA_MESSAGE, message);                                             // function putExtra can
+//        startActivity(intent);
+//    }
 
 }

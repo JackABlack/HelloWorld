@@ -3,4 +3,8 @@
     <string name="textBox">Please input something.</string>
     <string name="aButton">I am a button</string>
     <string name="mainFunction"> Do some real things. </string>
+    <string name="normal">Safe</string>
+    <string name="abnormal_2">Unsafe_2</string>
+    <string name="abnormal_3">Unsafe_3</string>
+    <string name="abnormal_4">Unsafe_4</string>
 </resources>
