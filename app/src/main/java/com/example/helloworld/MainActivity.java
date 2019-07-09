@@ -152,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
     public Camera mCamera;
     public CameraPreview mPreview;
     public Boolean safeToTakePic = false;
+    int signal = 0;
+
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,12 +184,13 @@ public class MainActivity extends AppCompatActivity {
                 // requestPermissions的最后一个是个自定义用于识别请求到的权限的整型值
             }
         }
-
+        // fuck virtual button on the bottom of Huawei mobile
         View decorView = getWindow().getDecorView();
         int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);
     }
+
 
     private static File getOutputMediaFile(int type){
         // To be safe, you should check that the SDCard is mounted
@@ -309,39 +312,48 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void changeCondition(View view) {
-        // Production stage, delete this thing.
+        // Production stage, delete this thing, and move useful things to onResume().
         int eventID = (int)(Math.random() * 3);
-        alertSender(eventID);
+        SoundPool soundPool = new SoundPool(5, AudioManager.STREAM_SYSTEM,5);
+        int[] sound = new int[3];
+
+        // put them in front of every thing after putting them into onResume().
+        sound[0] = soundPool.load(this,R.raw.alarm_1,1);
+        sound[1] = soundPool.load(this,R.raw.alarm_2,1);
+        sound[2] = soundPool.load(this,R.raw.alarm_3,1);
+        soundPool.stop(signal);
+        signal = alertSender(eventID,soundPool,sound,signal);
     }
 
-    public void alertSender(int eventID){
+    public int alertSender(int eventID,SoundPool soundPool,int[] sound,int signal){
         TextView editText = findViewById(R.id.Situation);
         String update = null;
-        SoundPool soundPool;
-        soundPool= new SoundPool(10, AudioManager.STREAM_SYSTEM,5);
         int color = this.getResources().getColor(R.color.dangerDirve);
-        // The most severe event should have the highest priority.
+        //Sound related stuff
+
+
+        // The most severe event should have the highest priority. currently not functioning
         switch (eventID){
             case 0:
                 update = this.getString(R.string.abnormal_2);
-                soundPool.load(this,R.raw.alarm_1,1);
+                signal = soundPool.play(sound[0],1, 1, 0, 0, 1);
                 break;
             case 1:
                 update = this.getString(R.string.abnormal_3);
-                soundPool.load(this,R.raw.alarm_2,2);
+                signal = soundPool.play(sound[1],1, 1, 0, 0, 1);
                 break;
             case 2:
                 update = this.getString(R.string.abnormal_4);
-                soundPool.load(this,R.raw.alarm_3,3);
+                signal = soundPool.play(sound[2],1, 1, 0, 0, 1);
                 break;
             case 3:
                 update = this.getString(R.string.normal);
                 color = this.getResources().getColor(R.color.safeDrive);
         }
         Log.d("stage reached", "alertSender: I am here");
-        soundPool.play(1,1, 1, 0, 0, 1);
         editText.setText(update);
         editText.setTextColor(color);
+        return signal;
     }
 
 //    public void clickButton(View view) {
