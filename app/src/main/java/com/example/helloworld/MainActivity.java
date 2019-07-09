@@ -13,10 +13,13 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.hardware.Camera;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -179,6 +182,11 @@ public class MainActivity extends AppCompatActivity {
                 // requestPermissions的最后一个是个自定义用于识别请求到的权限的整型值
             }
         }
+
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
     }
 
     private static File getOutputMediaFile(int type){
@@ -309,20 +317,31 @@ public class MainActivity extends AppCompatActivity {
     public void alertSender(int eventID){
         TextView editText = findViewById(R.id.Situation);
         String update = null;
+        SoundPool soundPool;
+        soundPool= new SoundPool(10, AudioManager.STREAM_SYSTEM,5);
+        int color = this.getResources().getColor(R.color.dangerDirve);
+        // The most severe event should have the highest priority.
         switch (eventID){
             case 0:
                 update = this.getString(R.string.abnormal_2);
+                soundPool.load(this,R.raw.alarm_1,1);
                 break;
             case 1:
                 update = this.getString(R.string.abnormal_3);
+                soundPool.load(this,R.raw.alarm_2,2);
                 break;
             case 2:
                 update = this.getString(R.string.abnormal_4);
+                soundPool.load(this,R.raw.alarm_3,3);
                 break;
             case 3:
                 update = this.getString(R.string.normal);
+                color = this.getResources().getColor(R.color.safeDrive);
         }
+        Log.d("stage reached", "alertSender: I am here");
+        soundPool.play(1,1, 1, 0, 0, 1);
         editText.setText(update);
+        editText.setTextColor(color);
     }
 
 //    public void clickButton(View view) {

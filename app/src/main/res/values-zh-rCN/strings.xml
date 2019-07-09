@@ -5,8 +5,8 @@
     <string name="textBox">说点啥</string>
     <string name="normal">安全驾驶</string>
     <string name="mainFunction">干点实事</string>
-
-    <string name="abnormal_2">危险驾驶情形2</string>
-    <string name="abnormal_3">危险驾驶情形3</string>
-    <string name="abnormal_4">危险驾驶情形4</string>
+<!--最多五个字，再多要变小-->
+    <string name="abnormal_2">危险驾驶2</string>
+    <string name="abnormal_3">危险驾驶3</string>
+    <string name="abnormal_4">危险驾驶4</string>
 </resources>
