@@ -31,6 +31,7 @@ import android.widget.FrameLayout;
 import android.widget.Gallery;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -297,6 +298,31 @@ public class MainActivity extends AppCompatActivity {
             mCamera = null;
             Log.d("Success","Released Camera.");
         }
+    }
+
+    public void changeCondition(View view) {
+        // Production stage, delete this thing.
+        int eventID = (int)(Math.random() * 3);
+        alertSender(eventID);
+    }
+
+    public void alertSender(int eventID){
+        TextView editText = findViewById(R.id.Situation);
+        String update = null;
+        switch (eventID){
+            case 0:
+                update = this.getString(R.string.abnormal_2);
+                break;
+            case 1:
+                update = this.getString(R.string.abnormal_3);
+                break;
+            case 2:
+                update = this.getString(R.string.abnormal_4);
+                break;
+            case 3:
+                update = this.getString(R.string.normal);
+        }
+        editText.setText(update);
     }
 
 //    public void clickButton(View view) {
