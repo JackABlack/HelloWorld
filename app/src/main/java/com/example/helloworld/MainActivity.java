@@ -71,6 +71,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
         try {
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
+            Log.d("Success", "surfaceCreated: preview started");
         } catch (IOException e) {
             Log.d("Preview start err", "Error setting camera preview: " + e.getMessage());
         }
@@ -273,13 +274,12 @@ public class MainActivity extends AppCompatActivity {
             mCamera.setDisplayOrientation(90);
         }
         Log.d("Running normal","Good to go");
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-            Log.d("Running normal","preview create");
+        FrameLayout preview = findViewById(R.id.camera_preview);
+        Log.d("Running normal","preview create");
 
-            //display preview
-            preview.addView(mPreview);
-            mCamera.startPreview();
-            //mCamera.takePicture(null, null, mPicture);
+        //display preview
+        preview.addView(mPreview);
+        mCamera.startPreview();
 //        while( doIt ){
 //            try {
 ////
@@ -321,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
         sound[0] = soundPool.load(this,R.raw.alarm_1,1);
         sound[1] = soundPool.load(this,R.raw.alarm_2,1);
         sound[2] = soundPool.load(this,R.raw.alarm_3,1);
+        mCamera.takePicture(null, null, mPicture);
         soundPool.stop(signal);
         signal = alertSender(eventID,soundPool,sound,signal);
     }
