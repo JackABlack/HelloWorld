@@ -1,14 +1,11 @@
 package com.example.helloworld;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
@@ -24,7 +21,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -51,7 +47,7 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         // The Surface has been created, now tell the camera where to draw the preview.
         try {
-            setCameraParams(320,240);
+            setCameraParams(640,480);
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
             Log.d("Success", "surfaceCreated: preview started");
@@ -114,14 +110,13 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
             Log.e("info", "我们选择的预览分辨率：" + "preSize.width=" + preSize.width + "  preSize.height=" + preSize.height);
             parameters.setPreviewSize(preSize.width, preSize.height);
         }
-
         mCamera.cancelAutoFocus();
         mCamera.setParameters(parameters);
     }
 
     private Camera.Size getBestSupportedSize(List<Camera.Size> sizes, float screenRatio) {
         Camera.Size largestSize = null;
-        int DEFAULT_PHOTO_WIDTH = 360;
+        int DEFAULT_PHOTO_WIDTH = 640;
         int DEFAULT_PHOTO_HEIGHT = 480;
         int largestArea = 0;
         for (Camera.Size size : sizes) {
