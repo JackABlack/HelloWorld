@@ -74,7 +74,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
         android:text="@string/normal"
         android:textColor="@color/safeDrive"
-        android:onClick="changeCondition"
+        android:onClick="switchSys"
         android:textSize="40dp"
         android:textAlignment="center"/>
 

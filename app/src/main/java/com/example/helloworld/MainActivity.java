@@ -3,48 +3,28 @@ package com.example.helloworld;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
-import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.Gallery;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
 
 /**
@@ -110,17 +90,14 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
             Log.d("Preview start Err:", "Error starting camera preview: " + e.getMessage());
         }
     }
-
-
 }
-
 
 
 class CameraActivity extends Activity {
     public static Camera openCamera() {
         Camera camera = null;
 
-        // 查找默认相机的标识
+        // 查找默认相机的标识，设定前摄像头
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         int numberOfCameras = Camera.getNumberOfCameras();
         int defaultCameraId = 0;
@@ -140,8 +117,8 @@ class CameraActivity extends Activity {
     }
 }
 
-class Notify{
-    public void Notify(int eventID){
+class Notify {
+    public void Notify(int eventID) {
         // 声音播放和文字改变代码于此做
     }
 
@@ -149,7 +126,7 @@ class Notify{
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "com.example.helloworld.MESSAGE";
-    public static boolean doIt = true;
+    public boolean doIt = false;
     public Camera mCamera;
     public CameraPreview mPreview;
     public Boolean safeToTakePic = false;
@@ -192,78 +169,11 @@ public class MainActivity extends AppCompatActivity {
         decorView.setSystemUiVisibility(uiOptions);
     }
 
-
-    private static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("MyCameraApp", "failed to create directory");
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else {
-            return null;
-        }
-
-        return mediaFile;
-    }
-
-
-    // 这是针对拍到照片的listener
-    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
-
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-
-            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-            if (pictureFile == null){
-                Log.d("Create File err", "Error creating media file, check storage permissions");
-                return;
-            }
-
-//            try {
-                // 在这里实现拍到照片后的动作
-                // Instantiate an ImageView and define its properties, Bitmap should be transformed into drawable first.
-                displayImg(data);
-                safeToTakePic = true;
-//                FileOutputStream fos = new FileOutputStream(pictureFile);
-//                fos.write(data);
-//                fos.close();
-//            } catch (FileNotFoundException e) {
-//                Log.d("Not Found", "File not found: " + e.getMessage());
-//            } catch (IOException e) {
-//                Log.d("Access File", "Error accessing file: " + e.getMessage());
-//            }
-        }
-    };
-
-    protected void displayImg(byte[] data){
-
-        //转换二进制矩阵为bitmap
-        Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
-        ImageView imageView = findViewById(R.id.imageCaptured);
-        imageView.setImageBitmap(bitmap);
-    }
-
     //开始以及重新开始的时候查找相机
-    protected void onResume(){
+    protected void onResume() {
 
         super.onResume();
+
         // Create an instance of Camera
         mCamera = CameraActivity.openCamera();
 
@@ -273,98 +183,131 @@ public class MainActivity extends AppCompatActivity {
             // 旋转方向
             mCamera.setDisplayOrientation(90);
         }
-        Log.d("Running normal","Good to go");
         FrameLayout preview = findViewById(R.id.camera_preview);
-        Log.d("Running normal","preview create");
-
-        //display preview
         preview.addView(mPreview);
         mCamera.startPreview();
-//        while( doIt ){
-//            try {
-////
-//                Log.d("Running normal","preview start");
-//                safeToTakePic = true;
-//                if (safeToTakePic){
-////
-//                    Log.d("Success","Captured pic");
-//                }
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        Log.d("Success", "onResume: Preview started");
+        safeToTakePic = true;
+
+        //安卓不能在操作UI的时候写死循环，要另开线程操作
+        new Monitor().start();
+
     }
 
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
         stopCamera();
     }
 
-    private void stopCamera(){
-        if(mCamera != null){
+    private void stopCamera() {
+        if (mCamera != null) {
             mCamera.release();
             mCamera = null;
-            Log.d("Success","Released Camera.");
+            Log.d("Success", "Released Camera.");
         }
     }
 
-    public void changeCondition(View view) {
+    // 这是针对拍到照片的listener
+    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+
+
+            // 在这里实现拍到照片后的动作
+            // Instantiate an ImageView and define its properties, Bitmap should be transformed into drawable first.
+            displayImg(data);
+            if (data != null) {
+                Log.d("Success", "onPictureTaken: Got picture data");
+            }
+            safeToTakePic = true;
+        }
+    };
+
+    protected void displayImg(byte[] data) {
+
+        //转换二进制矩阵为bitmap
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        ImageView imageView = findViewById(R.id.imageCaptured);
+        imageView.setImageBitmap(bitmap);
+    }
+
+    // Monitor main function
+
+    class Monitor extends Thread{
+
+        public int alertSender(int eventID, SoundPool soundPool, int[] sound, int signal) {
+            TextView editText = findViewById(R.id.Situation);
+            String update = null;
+            int color = MainActivity.this.getResources().getColor(R.color.dangerDirve);
+
+            // The most severe event should have the highest priority. currently this function is not functioning
+            switch (eventID) {
+                case 0:
+                    update = MainActivity.this.getString(R.string.abnormal_2);
+                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                    break;
+                case 1:
+                    update = MainActivity.this.getString(R.string.abnormal_3);
+                    signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
+                    break;
+                case 2:
+                    update = MainActivity.this.getString(R.string.abnormal_4);
+                    signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
+                    break;
+                case 3:
+                    update = MainActivity.this.getString(R.string.normal);
+                    color = MainActivity.this.getResources().getColor(R.color.safeDrive);
+            }
+            Log.d("stage reached", "alertSender: I am here");
+            editText.setText(update);
+            editText.setTextColor(color);
+            return signal;
+        }
+
+        @Override
+        public void run(){
+            int eventID;
+            SoundPool soundPool = new SoundPool(5, AudioManager.STREAM_SYSTEM, 5);
+            int[] sound = new int[3];
+
+            // put them in front of every thing after putting them into onResume().
+            sound[0] = soundPool.load(MainActivity.this, R.raw.alarm_1, 1);
+            sound[1] = soundPool.load(MainActivity.this, R.raw.alarm_2, 1);
+            sound[2] = soundPool.load(MainActivity.this, R.raw.alarm_3, 1);
+            //wait for audio to load.
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            eventID = (int) (Math.random() * 3);
+            while (true) {
+            try {
+                    if (safeToTakePic && doIt) {
+                        mCamera.takePicture(null, null, mPicture);
+                        safeToTakePic = false;
+                        soundPool.stop(signal);
+                        signal = alertSender(eventID, soundPool, sound, signal);
+                        Thread.sleep(1000);
+                        mCamera.startPreview();
+                        safeToTakePic = true;
+                    }
+                } catch(InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+// tap on textview to switch on or off whole function.
+    public void switchSys(View view) {
         // Production stage, delete this thing, and move useful things to onResume().
-        int eventID = (int)(Math.random() * 3);
-        SoundPool soundPool = new SoundPool(5, AudioManager.STREAM_SYSTEM,5);
-        int[] sound = new int[3];
-
-        // put them in front of every thing after putting them into onResume().
-        sound[0] = soundPool.load(this,R.raw.alarm_1,1);
-        sound[1] = soundPool.load(this,R.raw.alarm_2,1);
-        sound[2] = soundPool.load(this,R.raw.alarm_3,1);
-        mCamera.takePicture(null, null, mPicture);
-        soundPool.stop(signal);
-        signal = alertSender(eventID,soundPool,sound,signal);
+        doIt = !doIt;
+        Log.d("Status", "switchSys: Value is: " + doIt);
     }
 
-    public int alertSender(int eventID,SoundPool soundPool,int[] sound,int signal){
-        TextView editText = findViewById(R.id.Situation);
-        String update = null;
-        int color = this.getResources().getColor(R.color.dangerDirve);
-        //Sound related stuff
-
-
-        // The most severe event should have the highest priority. currently not functioning
-        switch (eventID){
-            case 0:
-                update = this.getString(R.string.abnormal_2);
-                signal = soundPool.play(sound[0],1, 1, 0, 0, 1);
-                break;
-            case 1:
-                update = this.getString(R.string.abnormal_3);
-                signal = soundPool.play(sound[1],1, 1, 0, 0, 1);
-                break;
-            case 2:
-                update = this.getString(R.string.abnormal_4);
-                signal = soundPool.play(sound[2],1, 1, 0, 0, 1);
-                break;
-            case 3:
-                update = this.getString(R.string.normal);
-                color = this.getResources().getColor(R.color.safeDrive);
-        }
-        Log.d("stage reached", "alertSender: I am here");
-        editText.setText(update);
-        editText.setTextColor(color);
-        return signal;
-    }
-
-//    public void clickButton(View view) {
-//        //why not functional? Needs a public void class, very strict.
-//        Intent intent = new Intent(this, DisplayMessageActivity.class);    // a new object, can send message from A to B, OVER ACTIVITIES! like a pipe
-//        // the initiator's value is: 1.who starts the view; 2.who receives intent's call
-//        EditText editText = (EditText) findViewById(R.id.editText);                         // editText is a kinda dataType, is used in activity_xxx.xml
-//        String message = editText.getText().toString();
-//        intent.putExtra(EXTRA_MESSAGE, message);                                             // function putExtra can
-//        startActivity(intent);
-//    }
 
 }
