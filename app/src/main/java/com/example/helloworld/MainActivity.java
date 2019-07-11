@@ -77,11 +77,6 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
         } catch (Exception e) {
             // ignore: tried to stop a non-existent preview
         }
-
-        // set preview size and make any resize, rotate or
-        // reformatting changes here
-
-        // start preview with new settings
         try {
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
@@ -107,7 +102,6 @@ class CameraActivity extends Activity {
                 defaultCameraId = i;
             }
         }
-
         try {
             camera = Camera.open(defaultCameraId);
         } catch (Exception e) {
@@ -115,13 +109,6 @@ class CameraActivity extends Activity {
         }
         return camera; //返回值如果是null那么调用失败
     }
-}
-
-class Notify {
-    public void Notify(int eventID) {
-        // 声音播放和文字改变代码于此做
-    }
-
 }
 
 public class MainActivity extends AppCompatActivity {
@@ -222,6 +209,7 @@ public class MainActivity extends AppCompatActivity {
             if (data != null) {
                 Log.d("Success", "onPictureTaken: Got picture data");
             }
+            mCamera.startPreview();
             safeToTakePic = true;
         }
     };
@@ -235,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Monitor main function
-
     class Monitor extends Thread{
 
         public int alertSender(int eventID, SoundPool soundPool, int[] sound, int signal) {
@@ -292,8 +279,7 @@ public class MainActivity extends AppCompatActivity {
                         soundPool.stop(signal);
                         signal = alertSender(eventID, soundPool, sound, signal);
                         Thread.sleep(1000);
-                        mCamera.startPreview();
-                        safeToTakePic = true;
+
                     }
                 } catch(InterruptedException e){
                     e.printStackTrace();
