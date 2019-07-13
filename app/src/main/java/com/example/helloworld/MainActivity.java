@@ -23,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import java.io.IOException;
 import java.util.List;
+import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
 
 /**
@@ -171,7 +172,10 @@ class CameraActivity extends Activity {
 }
 
 public class MainActivity extends AppCompatActivity {
-    public static final String EXTRA_MESSAGE = "com.example.helloworld.MESSAGE";
+    static {
+        System.loadLibrary("tensorflow_inference");
+        Log.i("Success","Tensorflow_loaded");
+    }
     public boolean doIt = false;
     public Camera mCamera;
     public CameraPreview mPreview;
@@ -329,13 +333,13 @@ public class MainActivity extends AppCompatActivity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            eventID = (int) (Math.random() * 3);
             while (true) {
             try {
                     if (safeToTakePic && doIt) {
                         mCamera.takePicture(null, null, mPicture);
                         safeToTakePic = false;
                         soundPool.stop(signal);
+                        eventID = (int) (Math.random() * 3);
                         signal = alertSender(eventID, soundPool, sound, signal);
                         Thread.sleep(1000);
 
