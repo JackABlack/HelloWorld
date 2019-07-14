@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -181,6 +182,18 @@ public class MainActivity extends AppCompatActivity {
     public CameraPreview mPreview;
     public Boolean safeToTakePic = false;
     int signal = 0;
+    int eventID = 0;
+    String situation = "初始化中";
+    private String MODEL_PATH = "file:///android_asset/vgg16net.pb";
+    private String INPUT_NAME = "input_2";
+    private String OUTPUT_NAME = "output_1";
+    private TensorFlowInferenceInterface tf;
+
+    //ARRAY TO HOLD THE PREDICTIONS AND FLOAT VALUES TO HOLD THE IMAGE DATA
+    //保存图片和图片尺寸的
+    float[] PREDICTIONS = new float[1000];
+    private float[] floatValues;
+    private int[] INPUT_SIZE = {224,224,3};
 
     @Override
 
@@ -236,9 +249,8 @@ public class MainActivity extends AppCompatActivity {
         FrameLayout preview = findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         mCamera.startPreview();
-        Log.d("Success", "onResume: Preview started");
         safeToTakePic = true;
-
+        tf = new TensorFlowInferenceInterface(getAssets(),MODEL_PATH);
         //安卓不能在操作UI的时候写死循环，要另开线程操作
         new Monitor().start();
 
@@ -281,45 +293,117 @@ public class MainActivity extends AppCompatActivity {
 
         //转换二进制矩阵为bitmap
         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        process(bitmap);
         ImageView imageView = findViewById(R.id.imageCaptured);
         imageView.setImageBitmap(bitmap);
     }
+
+
+    //FUNCTION TO COMPUTE THE MAXIMUM PREDICTION AND ITS CONFIDENCE
+    public Object[] argmax(float[] array){
+
+        int best = -1;
+        float best_confidence = 0.0f;
+        for(int i = 0;i < array.length;i++){
+            float value = array[i];
+            if (value > best_confidence){
+                best_confidence = value;
+                best = i;
+            }
+        }
+        return new Object[]{best,best_confidence};
+    }
+
+    public void process(final Bitmap bitmap){
+
+        //Runs inference in background thread
+        new AsyncTask<Integer,Integer,Integer>(){
+
+            @Override
+            protected Integer doInBackground(Integer ...params){
+                //Resize the image into 224 x 224
+                Bitmap resized_image = ImageUtils.processBitmap(bitmap,224);
+
+                //Normalize the pixels
+                floatValues = ImageUtils.normalizeBitmap(resized_image,224,127.5f,1.0f);
+
+                //Pass input into the tensorflow
+                tf.feed(INPUT_NAME,floatValues,1,224,224,3);
+
+                //compute predictions
+                tf.run(new String[]{OUTPUT_NAME});
+
+                //copy the output into the PREDICTIONS array
+                tf.fetch(OUTPUT_NAME,PREDICTIONS);
+
+                //Obtained highest prediction
+                Object[] results = argmax(PREDICTIONS);
+
+                int class_index = (Integer) results[0];
+                float confidence = (Float) results[1];
+                Log.d("Success", "Prediction Result: " + confidence);
+                if (confidence >= 0.75){
+                    eventID = class_index;
+                }else{
+                    eventID = 0;
+                }
+
+
+                try{
+//                    String conf = String.valueOf(confidence * 100).substring(0,5);
+//                    Convert predicted class index into actual label name
+//                    situation = ImageUtils.getLabel(getAssets().open("labels.json"),class_index);
+
+                } catch (Exception e){
+                }
+
+                return 0;
+            }
+
+        }.execute(0);
+    }
+
 
     // Monitor main function
     class Monitor extends Thread{
 
         public int alertSender(int eventID, SoundPool soundPool, int[] sound, int signal) {
             TextView editText = findViewById(R.id.Situation);
-            String update = null;
             int color = MainActivity.this.getResources().getColor(R.color.dangerDirve);
-
             // The most severe event should have the highest priority. currently this function is not functioning
             switch (eventID) {
                 case 0:
-                    update = MainActivity.this.getString(R.string.abnormal_2);
-                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                    color = MainActivity.this.getResources().getColor(R.color.safeDrive);
+                    situation = "安全驾驶";
                     break;
                 case 1:
-                    update = MainActivity.this.getString(R.string.abnormal_3);
                     signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
+                    situation = "玩手机1";
                     break;
                 case 2:
-                    update = MainActivity.this.getString(R.string.abnormal_4);
                     signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
+                    situation = "打电话1";
                     break;
                 case 3:
-                    update = MainActivity.this.getString(R.string.normal);
-                    color = MainActivity.this.getResources().getColor(R.color.safeDrive);
+                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                    situation = "玩手机2";
+                    break;
+                case 4:
+                    signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
+                    situation = "打电话2";
+                    break;
+                case 5:
+                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                    situation = "喝水";
             }
-            Log.d("stage reached", "alertSender: I am here");
-            editText.setText(update);
+            Log.d("content", "alertSender: " + situation);
+            editText.setText(situation);
             editText.setTextColor(color);
             return signal;
         }
 
         @Override
         public void run(){
-            int eventID;
             SoundPool soundPool = new SoundPool(5, AudioManager.STREAM_SYSTEM, 5);
             int[] sound = new int[3];
 
@@ -339,7 +423,6 @@ public class MainActivity extends AppCompatActivity {
                         mCamera.takePicture(null, null, mPicture);
                         safeToTakePic = false;
                         soundPool.stop(signal);
-                        eventID = (int) (Math.random() * 3);
                         signal = alertSender(eventID, soundPool, sound, signal);
                         Thread.sleep(1000);
 

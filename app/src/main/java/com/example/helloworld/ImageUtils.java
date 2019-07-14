@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 import java.io.InputStream;
 
-public class ImageUtils {
+class ImageUtils {
     /**
      * Returns a transformation matrix from one reference frame into another.
      * Handles cropping (if maintaining aspect ratio is desired) and rotation.
@@ -23,7 +23,7 @@ public class ImageUtils {
      * cropping the image if necessary.
      * @return The transformation fulfilling the desired requirements.
      */
-    public static Matrix getTransformationMatrix(
+     static Matrix getTransformationMatrix(
             final int srcWidth,
             final int srcHeight,
             final int dstWidth,
@@ -72,7 +72,7 @@ public class ImageUtils {
     }
 
 
-    public static Bitmap processBitmap(Bitmap source, int size){
+    static Bitmap processBitmap(Bitmap source, int size){
 
         int image_height = source.getHeight();
         int image_width = source.getWidth();
@@ -91,7 +91,7 @@ public class ImageUtils {
 
     }
 
-    public static float[] normalizeBitmap(Bitmap source,int size,float mean,float std){
+    static float[] normalizeBitmap(Bitmap source,int size,float mean,float std){
 
         float[] output = new float[size * size * 3];
 
@@ -134,7 +134,7 @@ public class ImageUtils {
     }
 
 
-    public static String getLabel(InputStream jsonStream, int index){
+    static String getLabel(InputStream jsonStream, int index){
         String label = "";
         try {
 
