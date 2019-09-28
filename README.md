@@ -1,12 +1,20 @@
 # HelloWorld
 Android camera project
 
-## Current Bugs
+## Introduction
+This is a android application aimed to run TensorFlow image recognization modles on mobile phone, to test their working efficiency and give quick report in real time on your phone screen.
 
-1. Cannot play voice alert(code ready, need test)
+## How to use
+*This application works better on phones with SDK API Level21(Android 5.0)*
+1. Download project and import all files into your Android Studio
+2. Run dependency download
+3. Create folder name *assets* under path *app/main/src*, and put your modles in it. Per requirment from Google, file name should not contain underscore.
+4. make change on *app/src/main/res/menu* to make this app fits your own situation, then make change in *app/src/main/java/MainActivities.java* to change the behavior when clicking related buttons.
+5. Test your app as your wish.
 
-## Target
 
-Apply VCC Model on mobile phone.
+## Next step
+if get vacant, I would  make it easier to adjust. like make modles more easier to remove or add.
 
-There are 3 elements on MainActicity, A Layout to show preview of camera, a textView to show current driving condition, a picView to show picture captured.
+## Contact
+Feel free to contact me via email: lv439@126.com, as you can see from my account, I am a Chinese developer.
