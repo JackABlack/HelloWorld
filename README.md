@@ -17,4 +17,4 @@ This is a android application aimed to run TensorFlow image recognization modles
 if get vacant, I would  make it easier to adjust. like make modles more easier to remove or add.
 
 ## Contact
-Feel free to contact me via email: lv439@126.com, as you can see from my account, I am a Chinese developer.
+Feel free to contact me via email: lv4399@126.com, as you can see from my account, I am a Chinese developer.
