@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="120dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.523"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <FrameLayout
+            android:id="@+id/camera_preview"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:keepScreenOn="true"
+            android:rotation="0"
+            android:rotationX="0">
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="#333333"
+        android:minHeight="?attr/actionBarSize"
+        android:scrollbarSize="0px"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="@string/app_name"
+        app:titleMargin="0dp"
+        app:titleTextColor="@android:color/white"
+        tools:targetApi="21"/>
+
+    <TextView
+        android:id="@+id/Situation"
+        android:layout_width="wrap_content"
+        android:layout_height="29dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/normal"
+        android:textAlignment="center"
+        android:textColor="@color/safeDrive"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/middleDivider"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="fill_parent"
+        android:layout_height="3dp"
+        android:background="@color/black"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        tools:visibility="visible" />
+
+    <Switch
+        android:id="@+id/trigger"
+        android:layout_width="142dp"
+        android:layout_height="29dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:onClick="switchSys"
+        android:text="@string/triggerText"
+        android:textOff="Stop"
+        android:textOn="Run"
+        android:textSize="10sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+    <TextView
+        android:id="@+id/loadInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/loadInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/trigger" />
+
+    <TextView
+        android:id="@+id/loadValue"
+        android:layout_width="48dp"
+        android:layout_height="17dp"
+        android:text="@string/loadValue"
+        app:layout_constraintBottom_toBottomOf="@+id/loadInfo"
+        app:layout_constraintStart_toEndOf="@+id/loadInfo"
+        app:layout_constraintTop_toTopOf="@+id/loadInfo"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/runInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:text="@string/runInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/loadInfo" />
+
+    <TextView
+        android:id="@+id/avgInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:text="@string/avgInfo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/RunTimes" />
+
+    <TextView
+        android:id="@+id/RunTimes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/runInfo"
+        android:text="@string/RunTimesInfo" />
+
+    <TextView
+        android:id="@+id/avgValue"
+        android:layout_width="48dp"
+        android:layout_height="18dp"
+        android:text="@string/avgValue"
+        app:layout_constraintBottom_toBottomOf="@+id/avgInfo"
+        app:layout_constraintStart_toEndOf="@+id/runInfo"
+        app:layout_constraintTop_toTopOf="@+id/avgInfo"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/runValue"
+        android:layout_width="48dp"
+        android:layout_height="18dp"
+        android:text="@string/runValue"
+        app:layout_constraintBottom_toBottomOf="@+id/runInfo"
+        app:layout_constraintStart_toEndOf="@+id/runInfo"
+        app:layout_constraintTop_toTopOf="@+id/runInfo" />
+
+    <TextView
+        android:id="@+id/TimeValue"
+        android:layout_width="48dp"
+        android:layout_height="18dp"
+        android:text="@string/RunTimes"
+        app:layout_constraintBottom_toBottomOf="@+id/RunTimes"
+        app:layout_constraintStart_toEndOf="@+id/runInfo"
+        app:layout_constraintTop_toTopOf="@+id/RunTimes" />
+
+    <View
+        android:id="@+id/middleDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:background="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <TextView
+        android:id="@+id/ModelName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="@string/modelName"
+        app:layout_constraintEnd_toEndOf="@+id/Situation"
+        app:layout_constraintStart_toStartOf="@+id/Situation"
+        app:layout_constraintTop_toBottomOf="@+id/Situation" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

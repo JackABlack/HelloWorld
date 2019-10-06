@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">驾驶行为监测 - 模型效率测试</string>
+    <string name="normal">安全驾驶</string>
+    <!--最多五个字，再多要变小-->
+    <string name="abnormal2">危险驾驶2</string>
+    <string name="abnormal3">危险驾驶3</string>
+    <string name="abnormal4">危险驾驶4</string>
+    <string name="notice">请将面部置于框内</string>
+    <string name="normalDescription">没什么值得关注的</string>
+    <string name="triggerText">监测控制</string>
+    <string name="runInfo">模型运行花费：</string>
+    <string name="loadInfo">模型加载花费：</string>
+    <string name="avgInfo">模型平均花费：</string>
+    <string name="modelName">已卸载</string>
+    <string name="ICPv2">加载InceptionV2（暂不可用）</string>
+    <string name="GoogleNet">加载GoogleNet</string>
+    <string name="ResNet50">加载ResNet50</string>
+    <string name="VGG16" translatable="false">加载VGG16</string>
+    <string name="warnOnQuickSwitch">请至少等待1帧处理完再停止测试</string>
+    <string name="RunTimesInfo">运行次数    ：</string>
+</resources>
