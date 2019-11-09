@@ -13,3 +13,5 @@
 .externalNativeBuild
 /app/build
 /app/src/main/assets
+*.apk
+/app/release/*

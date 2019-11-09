@@ -200,12 +200,16 @@ public class MainActivity extends AppCompatActivity {
     int signal = 0;
     int eventID = 0;
     String situation;
+
+    //重构的时候整一个object
     private final String VGG_PATH = "file:///android_asset/vgg16net.pb";
     private final String Google_PATH = "file:///android_asset/GoogleNet.pb";
     private final String ICPv2_PATH = "file:///android_asset/InceptionV2.pb";
     private final String ResNet50_PATH = "file:///android_asset/Resnet50.pb";
     private String INPUT_NAME = "input_2";
     private String OUTPUT_NAME = "output_1";
+    private int Resize_Para = 224;
+    private String OUTPUT_TYPE = "traditional"; // Option: Traditional, New;
     private TensorFlowInferenceInterface tf;
 
     //ARRAY TO HOLD THE PREDICTIONS AND FLOAT VALUES TO HOLD THE IMAGE DATA
@@ -271,24 +275,31 @@ public class MainActivity extends AppCompatActivity {
                 MODEL_PATH = VGG_PATH;
                 INPUT_NAME = "input_2";
                 OUTPUT_NAME = "output_1";
+                Resize_Para = 224;
+                OUTPUT_TYPE = "traditional";
                 break;
             case R.id.ICPv2:
                 Toast.makeText(this, "InceptionV2 Loaded", Toast.LENGTH_LONG).show();
                 MODEL_PATH = ICPv2_PATH;
                 INPUT_NAME = "Placeholder";
                 OUTPUT_NAME = "Softmax";
+                Resize_Para = 224;
+                OUTPUT_TYPE = "traditional";
                 break;
             case R.id.GoogleNet:
                 Toast.makeText(this, R.string.GoogleNet, Toast.LENGTH_LONG).show();
                 MODEL_PATH = Google_PATH;
                 INPUT_NAME = "input_1";
                 OUTPUT_NAME = "output_1";
+                Resize_Para = 299;
+                OUTPUT_TYPE = "New";
                 break;
             case R.id.ResNet50:
                 Toast.makeText(this, R.string.ResNet50, Toast.LENGTH_LONG).show();
                 MODEL_PATH = ResNet50_PATH;
                 INPUT_NAME = "input_2";
                 OUTPUT_NAME = "output_1";
+                Resize_Para = 224;
                 break;
             default:
                 break;
@@ -416,14 +427,14 @@ public class MainActivity extends AppCompatActivity {
             protected Integer doInBackground(Integer ...params){
                 long inTime = System.currentTimeMillis();
                 //Resize the image into 224 x 224 and rotate
-                Bitmap resized_image = ImageUtils.processBitmap(bitmap,224);
+                Bitmap resized_image = ImageUtils.processBitmap(bitmap,Resize_Para);
                 Bitmap rotated_image = ImageUtils.rotateBitmap(resized_image,90);
 
                 //Normalize the pixels
-                floatValues = ImageUtils.normalizeBitmap(rotated_image,224,127.5f,1.0f);
+                floatValues = ImageUtils.normalizeBitmap(rotated_image,Resize_Para,127.5f,1.0f);
 
                 //Pass input into the tensorflow
-                tf.feed(INPUT_NAME,floatValues,1,224,224,3);
+                tf.feed(INPUT_NAME,floatValues,1,Resize_Para,Resize_Para,3);
 
                 //compute predictions
                 tf.run(new String[]{OUTPUT_NAME});
@@ -480,31 +491,48 @@ public class MainActivity extends AppCompatActivity {
             final TextView editText = findViewById(R.id.Situation);
             int color = MainActivity.this.getResources().getColor(R.color.dangerDirve);
             // The most severe event should have the highest priority. currently this function is not functioning
-            switch (eventID) {
-                case 0:
-                    color = MainActivity.this.getResources().getColor(R.color.safeDrive);
-                    situation = "安全驾驶";
-                    break;
-                case 1:
-                    signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
-                    situation = "玩手机1";
-                    break;
-                case 2:
-                    signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
-                    situation = "打电话1";
-                    break;
-                case 3:
-                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
-                    situation = "玩手机2";
-                    break;
-                case 4:
-                    signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
-                    situation = "打电话2";
-                    break;
-                case 5:
-                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
-                    situation = "喝水";
+            if(OUTPUT_TYPE == "traditional"){
+                switch (eventID) {
+                    case 0:
+                        color = MainActivity.this.getResources().getColor(R.color.safeDrive);
+                        situation = "安全驾驶";
+                        break;
+                    case 1:
+                        signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
+                        situation = "玩手机1";
+                        break;
+                    case 2:
+                        signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
+                        situation = "打电话1";
+                        break;
+                    case 3:
+                        signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                        situation = "玩手机2";
+                        break;
+                    case 4:
+                        signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
+                        situation = "打电话2";
+                        break;
+                    case 5:
+                        signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                        situation = "喝水";
+                }
+            }else if(OUTPUT_TYPE == "New"){
+                switch (eventID) {
+                    case 0:
+                        color = MainActivity.this.getResources().getColor(R.color.safeDrive);
+                        situation = "安全驾驶";
+                        break;
+                    case 1:
+                        signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
+                        situation = "使用手机";
+                        break;
+                    case 2:
+                        signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                        situation = "喝水";
+                }
             }
+
             Log.d("content", "alertSender: " + situation);
             final int innerColor = color;
             runOnUiThread(new Runnable() {
