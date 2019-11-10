@@ -3,9 +3,13 @@ package com.example.helloworld;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.os.Environment;
+import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 
 class ImageUtils {
@@ -91,7 +95,7 @@ class ImageUtils {
 
     }
 
-    static float[] normalizeBitmap(Bitmap source,int size,float mean,float std){
+    static float[] normalizeBitmap(Bitmap source,int size,float mean,float std,float key){
 
         float[] output = new float[size * size * 3];
 
@@ -100,9 +104,9 @@ class ImageUtils {
         source.getPixels(intValues, 0, source.getWidth(), 0, 0, source.getWidth(), source.getHeight());
         for (int i = 0; i < intValues.length; ++i) {
             final int val = intValues[i];
-            output[i * 3] = (((val >> 16) & 0xFF) - mean)/std;
-            output[i * 3 + 1] = (((val >> 8) & 0xFF) - mean)/std;
-            output[i * 3 + 2] = ((val & 0xFF) - mean)/std;
+            output[i * 3] = (((val >> 16) & 0xFF)/key - mean)/std;
+            output[i * 3 + 1] = (((val >> 8) & 0xFF)/key - mean)/std;
+            output[i * 3 + 2] = ((val & 0xFF)/key - mean)/std;
         }
 
         return output;
@@ -170,6 +174,30 @@ class ImageUtils {
 
         }
         return label;
+    }
+
+    public static void saveImg(Bitmap img,float[] preds,int quality)
+    {
+
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#.00");
+        String img_name="";
+        for (int i=0;i<3;i++)
+            img_name+=df.format(preds[i])+"-";
+        try {
+            File file = new File(Environment.getExternalStorageDirectory(),img_name + quality+".jpg");
+            Log.i("File Path", "saveImg: path:" + file.getAbsolutePath());
+            FileOutputStream fileOutputStream=new FileOutputStream(file);
+            //压缩图片，如果要保存png，就用Bitmap.CompressFormat.PNG，要保存jpg就用Bitmap.CompressFormat.JPEG,质量是100%，表示不压缩
+            img.compress(Bitmap.CompressFormat.JPEG,quality,fileOutputStream);
+            //写入，这里会卡顿，因为图片较大
+            fileOutputStream.flush();
+            //记得要关闭写入流
+            fileOutputStream.close();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
     }
 }
 

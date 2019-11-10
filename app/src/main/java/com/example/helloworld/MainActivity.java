@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -200,6 +201,8 @@ public class MainActivity extends AppCompatActivity {
     int signal = 0;
     int eventID = 0;
     String situation;
+    private float picCount = 0;
+    private float confidence = 0;
 
     //重构的时候整一个object
     private final String VGG_PATH = "file:///android_asset/vgg16net.pb";
@@ -210,6 +213,9 @@ public class MainActivity extends AppCompatActivity {
     private String OUTPUT_NAME = "output_1";
     private int Resize_Para = 224;
     private String OUTPUT_TYPE = "traditional"; // Option: Traditional, New;
+    private float Resize_Mean = 127.5f;
+    private float Resize_Std = 1.0f;
+    private float Resize_key = 1.0f;
     private TensorFlowInferenceInterface tf;
 
     //ARRAY TO HOLD THE PREDICTIONS AND FLOAT VALUES TO HOLD THE IMAGE DATA
@@ -227,25 +233,20 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
+
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
-
                 //此处显示请求不通过的信息
-
             } else {
-
                 // No explanation needed, we can request the permission.
-
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA},
                         1);
-
                 // requestPermissions的最后一个是个自定义用于识别请求到的权限的整型值
             }
         }
@@ -258,6 +259,16 @@ public class MainActivity extends AppCompatActivity {
         int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permission,
+                                           int[] grantResults) {
+        //requestCode就是requestPermissions()的第三个参数
+        //permission就是requestPermissions()的第二个参数
+        //grantResults是结果，0调试通过，-1表示拒绝
+        Log.i("Permission", "onRequestPermissionsResult: " + grantResults);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -293,6 +304,9 @@ public class MainActivity extends AppCompatActivity {
                 OUTPUT_NAME = "output_1";
                 Resize_Para = 299;
                 OUTPUT_TYPE = "New";
+                Resize_Mean = 0.5f;
+                Resize_Std = 0.5f;
+                Resize_key = 255.0f;
                 break;
             case R.id.ResNet50:
                 Toast.makeText(this, R.string.ResNet50, Toast.LENGTH_LONG).show();
@@ -399,6 +413,7 @@ public class MainActivity extends AppCompatActivity {
         });
 //        ImageView imageView = findViewById(R.id.imageCaptured);
 //        imageView.setImageBitmap(bitmap);
+        ToastUtils.toast(this,"Confidence:" + confidence);
         Log.d("DURATION", "runtime cost: " + runDuration + "ms");
     }
 
@@ -431,7 +446,7 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap rotated_image = ImageUtils.rotateBitmap(resized_image,90);
 
                 //Normalize the pixels
-                floatValues = ImageUtils.normalizeBitmap(rotated_image,Resize_Para,127.5f,1.0f);
+                floatValues = ImageUtils.normalizeBitmap(rotated_image,Resize_Para,Resize_Mean,Resize_Std,Resize_key);
 
                 //Pass input into the tensorflow
                 tf.feed(INPUT_NAME,floatValues,1,Resize_Para,Resize_Para,3);
@@ -448,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
                 Object[] results = argmax(PREDICTIONS);
 
                 int class_index = (Integer) results[0];
-                float confidence = (Float) results[1];
+                confidence = (Float) results[1];
                 Log.d("Success", "Prediction Result: " + confidence);
                 if (confidence >= 0.75){
                     eventID = class_index;
@@ -462,6 +477,13 @@ public class MainActivity extends AppCompatActivity {
 //
 //                } catch (Exception e){
 //                }
+                if(picCount == 10){
+                    ImageUtils.saveImg(bitmap,PREDICTIONS,10);
+                    Log.i("File Save", "Picture saved");
+                    picCount = 0 ;
+                }else {
+                    picCount ++;
+                }
                 return (int)(outTime - inTime);
             }
 

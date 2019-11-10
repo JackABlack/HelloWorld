@@ -1,5 +1,8 @@
 package com.example.helloworld;
 
+import android.content.Context;
+import android.widget.Toast;
+
 public class statisticUtils {
     private int totalDuration;
     private int runTimes;
@@ -26,5 +29,6 @@ public class statisticUtils {
     public int getRunTimes(){
         return runTimes;
     }
+
 
 }
