@@ -31,7 +31,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -201,21 +200,12 @@ public class MainActivity extends AppCompatActivity {
     int signal = 0;
     int eventID = 0;
     String situation;
-    private float picCount = 0;
-    private float confidence = 0;
-
-    //重构的时候整一个object
     private final String VGG_PATH = "file:///android_asset/vgg16net.pb";
     private final String Google_PATH = "file:///android_asset/GoogleNet.pb";
     private final String ICPv2_PATH = "file:///android_asset/InceptionV2.pb";
     private final String ResNet50_PATH = "file:///android_asset/Resnet50.pb";
     private String INPUT_NAME = "input_2";
     private String OUTPUT_NAME = "output_1";
-    private int Resize_Para = 224;
-    private String OUTPUT_TYPE = "traditional"; // Option: Traditional, New;
-    private float Resize_Mean = 127.5f;
-    private float Resize_Std = 1.0f;
-    private float Resize_key = 1.0f;
     private TensorFlowInferenceInterface tf;
 
     //ARRAY TO HOLD THE PREDICTIONS AND FLOAT VALUES TO HOLD THE IMAGE DATA
@@ -233,20 +223,25 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
+
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
+
                 //此处显示请求不通过的信息
+
             } else {
+
                 // No explanation needed, we can request the permission.
+
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA},
                         1);
+
                 // requestPermissions的最后一个是个自定义用于识别请求到的权限的整型值
             }
         }
@@ -259,16 +254,6 @@ public class MainActivity extends AppCompatActivity {
         int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permission,
-                                           int[] grantResults) {
-        //requestCode就是requestPermissions()的第三个参数
-        //permission就是requestPermissions()的第二个参数
-        //grantResults是结果，0调试通过，-1表示拒绝
-        Log.i("Permission", "onRequestPermissionsResult: " + grantResults);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -286,34 +271,24 @@ public class MainActivity extends AppCompatActivity {
                 MODEL_PATH = VGG_PATH;
                 INPUT_NAME = "input_2";
                 OUTPUT_NAME = "output_1";
-                Resize_Para = 224;
-                OUTPUT_TYPE = "traditional";
                 break;
             case R.id.ICPv2:
                 Toast.makeText(this, "InceptionV2 Loaded", Toast.LENGTH_LONG).show();
                 MODEL_PATH = ICPv2_PATH;
                 INPUT_NAME = "Placeholder";
                 OUTPUT_NAME = "Softmax";
-                Resize_Para = 224;
-                OUTPUT_TYPE = "traditional";
                 break;
             case R.id.GoogleNet:
                 Toast.makeText(this, R.string.GoogleNet, Toast.LENGTH_LONG).show();
                 MODEL_PATH = Google_PATH;
                 INPUT_NAME = "input_1";
                 OUTPUT_NAME = "output_1";
-                Resize_Para = 299;
-                OUTPUT_TYPE = "New";
-                Resize_Mean = 0.5f;
-                Resize_Std = 0.5f;
-                Resize_key = 255.0f;
                 break;
             case R.id.ResNet50:
                 Toast.makeText(this, R.string.ResNet50, Toast.LENGTH_LONG).show();
                 MODEL_PATH = ResNet50_PATH;
                 INPUT_NAME = "input_2";
                 OUTPUT_NAME = "output_1";
-                Resize_Para = 224;
                 break;
             default:
                 break;
@@ -413,7 +388,6 @@ public class MainActivity extends AppCompatActivity {
         });
 //        ImageView imageView = findViewById(R.id.imageCaptured);
 //        imageView.setImageBitmap(bitmap);
-        ToastUtils.toast(this,"Confidence:" + confidence);
         Log.d("DURATION", "runtime cost: " + runDuration + "ms");
     }
 
@@ -442,14 +416,14 @@ public class MainActivity extends AppCompatActivity {
             protected Integer doInBackground(Integer ...params){
                 long inTime = System.currentTimeMillis();
                 //Resize the image into 224 x 224 and rotate
-                Bitmap resized_image = ImageUtils.processBitmap(bitmap,Resize_Para);
+                Bitmap resized_image = ImageUtils.processBitmap(bitmap,224);
                 Bitmap rotated_image = ImageUtils.rotateBitmap(resized_image,90);
 
                 //Normalize the pixels
-                floatValues = ImageUtils.normalizeBitmap(rotated_image,Resize_Para,Resize_Mean,Resize_Std,Resize_key);
+                floatValues = ImageUtils.normalizeBitmap(rotated_image,224,127.5f,1.0f);
 
                 //Pass input into the tensorflow
-                tf.feed(INPUT_NAME,floatValues,1,Resize_Para,Resize_Para,3);
+                tf.feed(INPUT_NAME,floatValues,1,224,224,3);
 
                 //compute predictions
                 tf.run(new String[]{OUTPUT_NAME});
@@ -463,7 +437,7 @@ public class MainActivity extends AppCompatActivity {
                 Object[] results = argmax(PREDICTIONS);
 
                 int class_index = (Integer) results[0];
-                confidence = (Float) results[1];
+                float confidence = (Float) results[1];
                 Log.d("Success", "Prediction Result: " + confidence);
                 if (confidence >= 0.75){
                     eventID = class_index;
@@ -477,13 +451,6 @@ public class MainActivity extends AppCompatActivity {
 //
 //                } catch (Exception e){
 //                }
-                if(picCount == 10){
-                    ImageUtils.saveImg(bitmap,PREDICTIONS,10);
-                    Log.i("File Save", "Picture saved");
-                    picCount = 0 ;
-                }else {
-                    picCount ++;
-                }
                 return (int)(outTime - inTime);
             }
 
@@ -513,48 +480,31 @@ public class MainActivity extends AppCompatActivity {
             final TextView editText = findViewById(R.id.Situation);
             int color = MainActivity.this.getResources().getColor(R.color.dangerDirve);
             // The most severe event should have the highest priority. currently this function is not functioning
-            if(OUTPUT_TYPE == "traditional"){
-                switch (eventID) {
-                    case 0:
-                        color = MainActivity.this.getResources().getColor(R.color.safeDrive);
-                        situation = "安全驾驶";
-                        break;
-                    case 1:
-                        signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
-                        situation = "玩手机1";
-                        break;
-                    case 2:
-                        signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
-                        situation = "打电话1";
-                        break;
-                    case 3:
-                        signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
-                        situation = "玩手机2";
-                        break;
-                    case 4:
-                        signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
-                        situation = "打电话2";
-                        break;
-                    case 5:
-                        signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
-                        situation = "喝水";
-                }
-            }else if(OUTPUT_TYPE == "New"){
-                switch (eventID) {
-                    case 0:
-                        color = MainActivity.this.getResources().getColor(R.color.safeDrive);
-                        situation = "安全驾驶";
-                        break;
-                    case 1:
-                        signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
-                        situation = "使用手机";
-                        break;
-                    case 2:
-                        signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
-                        situation = "喝水";
-                }
+            switch (eventID) {
+                case 0:
+                    color = MainActivity.this.getResources().getColor(R.color.safeDrive);
+                    situation = "安全驾驶";
+                    break;
+                case 1:
+                    signal = soundPool.play(sound[1], 1, 1, 0, 0, 1);
+                    situation = "玩手机1";
+                    break;
+                case 2:
+                    signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
+                    situation = "打电话1";
+                    break;
+                case 3:
+                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                    situation = "玩手机2";
+                    break;
+                case 4:
+                    signal = soundPool.play(sound[2], 1, 1, 0, 0, 1);
+                    situation = "打电话2";
+                    break;
+                case 5:
+                    signal = soundPool.play(sound[0], 1, 1, 0, 0, 1);
+                    situation = "喝水";
             }
-
             Log.d("content", "alertSender: " + situation);
             final int innerColor = color;
             runOnUiThread(new Runnable() {
