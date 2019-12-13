@@ -212,9 +212,7 @@ public class MainActivity extends AppCompatActivity {
     //保存图片和图片尺寸的
     float[] PREDICTIONS = new float[1000];
     private float[] floatValues;
-    private int[] INPUT_SIZE = {224,224,3};
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -223,25 +221,33 @@ public class MainActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
 
-        // Here, thisActivity is the current activity
+        // Here, thisActivity is the current activity, Require a camera permission
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
 
                 //此处显示请求不通过的信息
-
+                Toast.makeText(this,"请提供摄像头权限以继续",Toast.LENGTH_SHORT);
             } else {
-
-                // No explanation needed, we can request the permission.
-
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA},
                         1);
+                // requestPermissions的最后一个是个自定义用于识别请求到的权限的整型值
+            }
+        }
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
+                //此处显示请求不通过的信息
+                Toast.makeText(this,"请提供存储权限以继续",Toast.LENGTH_SHORT);
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        1);
                 // requestPermissions的最后一个是个自定义用于识别请求到的权限的整型值
             }
         }
@@ -266,11 +272,11 @@ public class MainActivity extends AppCompatActivity {
         String MODEL_PATH = "";
         doIt = false;
         switch (item.getItemId()) {
+//            case R.id.loadModel:
+
             case R.id.VGG16:
                 Toast.makeText(this, R.string.VGG16, Toast.LENGTH_LONG).show();
-                MODEL_PATH = VGG_PATH;
-                INPUT_NAME = "input_2";
-                OUTPUT_NAME = "output_1";
+                model.setModel(modelUtils.VGG_PATH,"input_2","output_1","traditional",224);
                 break;
             case R.id.ICPv2:
                 Toast.makeText(this, "InceptionV2 Loaded", Toast.LENGTH_LONG).show();
@@ -290,11 +296,13 @@ public class MainActivity extends AppCompatActivity {
                 INPUT_NAME = "input_2";
                 OUTPUT_NAME = "output_1";
                 break;
+
+
             default:
                 break;
         }
         tf.close();
-        tf = loadTFModel(getAssets(),MODEL_PATH);
+        tf = loadTFModel(getAssets(),model.MODEL_PATH);
         return true;
     }
 
@@ -316,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
         preview.addView(mPreview);
         mCamera.startPreview();
         safeToTakePic = true;
-        tf = loadTFModel(getAssets(),VGG_PATH);
+        tf = loadTFModel(getAssets(),model.MODEL_PATH);
         long threadId=Thread.currentThread().getId();
         Log.d("Info", "Thread: " + threadId);
         //安卓不能在操作UI的时候写死循环，要另开线程操作
@@ -426,10 +434,10 @@ public class MainActivity extends AppCompatActivity {
                 tf.feed(INPUT_NAME,floatValues,1,224,224,3);
 
                 //compute predictions
-                tf.run(new String[]{OUTPUT_NAME});
+                tf.run(new String[]{model.OUTPUT_NAME});
 
                 //copy the output into the PREDICTIONS array
-                tf.fetch(OUTPUT_NAME,PREDICTIONS);
+                tf.fetch(model.OUTPUT_NAME,PREDICTIONS);
 
                 long outTime = System.currentTimeMillis();
                 TextView editText = findViewById(R.id.avgValue);
@@ -467,7 +475,7 @@ public class MainActivity extends AppCompatActivity {
         String result = ((int)(outTime - inTime)) + "";
         editText.setText(result);
         editText = findViewById(R.id.ModelName);
-        String[] temp = MODEL_PATH.split("/");
+        String[] temp = model.MODEL_PATH.split("/");
         result = temp[temp.length - 1];
         editText.setText(result);
         return tf;

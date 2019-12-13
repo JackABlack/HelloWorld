@@ -13,10 +13,11 @@
     <string name="loadInfo">模型加载花费：</string>
     <string name="avgInfo">模型平均花费：</string>
     <string name="modelName">已卸载</string>
-    <string name="ICPv2">加载InceptionV2（暂不可用）</string>
-    <string name="GoogleNet">加载GoogleNet</string>
-    <string name="ResNet50">加载ResNet50</string>
-    <string name="VGG16" translatable="false">加载VGG16</string>
+    <string name="ICPv2">加载InceptionV2参数</string>
+    <string name="GoogleNet">加载GoogleNet参数</string>
+    <string name="ResNet50">加载ResNet50参数</string>
+    <string name="VGG16" translatable="false">加载VGG16参数</string>
     <string name="warnOnQuickSwitch">请至少等待1帧处理完再停止测试</string>
     <string name="RunTimesInfo">运行次数    ：</string>
+    <string name="loadModel">加载新模型</string>
 </resources>

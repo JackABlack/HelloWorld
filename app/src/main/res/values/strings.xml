@@ -14,11 +14,12 @@
     <string name="runValue" translatable="false">0</string>
     <string name="loadValue" translatable="false">0</string>
     <string name="RunTimes" translatable="false">0</string>
-    <string name="GoogleNet">Load GoogleNet</string>
-    <string name="ICPv2">Load InceptionV2（Unavailable）</string>
-    <string name="VGG16">Load VGG16</string>
+    <string name="GoogleNet">Load parameter of GoogleNet</string>
+    <string name="ICPv2">Load parameter of InceptionV2（Unavailable）</string>
+    <string name="VGG16">Load parameter of VGG16</string>
     <string name="modelName">Unloaded</string>
-    <string name="ResNet50">Load ResNet50</string>
+    <string name="ResNet50">Load parameter of ResNet50</string>
     <string name="warnOnQuickSwitch">Please wait at least one frame finished processing.</string>
     <string name="RunTimesInfo">Model Total Run Times：</string>
+    <string name="loadModel">Load Model</string>
 </resources>

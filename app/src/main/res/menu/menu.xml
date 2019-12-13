@@ -8,4 +8,6 @@
         android:title="@string/ICPv2" />
     <item android:id="@+id/ResNet50"
         android:title="@string/ResNet50" />
+    <item android:id="@+id/loadModel"
+        android:title="@string/loadModel" />
 </menu>
