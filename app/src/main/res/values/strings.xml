@@ -22,4 +22,8 @@
     <string name="warnOnQuickSwitch">Please wait at least one frame finished processing.</string>
     <string name="RunTimesInfo">Model Total Run Times：</string>
     <string name="loadModel">Load Model</string>
+    <string name="loadFail">Fail to load file</string>
+    <string name="loadFailContent">Fail to load Tensorflow model, please check the file you selected.</string>
+    <string name="reselect">Reselect</string>
+    <string name="cancle">cancle</string>
 </resources>

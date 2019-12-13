@@ -7,7 +7,9 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -187,6 +189,10 @@ class CameraActivity extends Activity {
     }
 }
 
+/**
+* MainActivity is here
+* */
+
 public class MainActivity extends AppCompatActivity {
     static {
         System.loadLibrary("tensorflow_inference");
@@ -302,7 +308,28 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         tf.close();
-        tf = loadTFModel(getAssets(),model.MODEL_PATH);
+        try{
+            tf = loadTFModel(getAssets(),model.MODEL_PATH);
+        }catch(RuntimeException e){
+            Log.e("RuntimeException", "Tensorflow Model: Failed to load " );
+        }finally {
+            AlertDialog.Builder loadDialog = new AlertDialog.Builder(this);
+            loadDialog.setTitle(R.string.loadFail);
+            loadDialog.setMessage(R.string.loadFailContent);
+            loadDialog.setPositiveButton(R.string.reselect, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    //调用文件选择器
+                }
+            });
+            loadDialog.setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    System.exit(-1);
+                }
+            });
+            loadDialog.show();
+        }
         return true;
     }
 

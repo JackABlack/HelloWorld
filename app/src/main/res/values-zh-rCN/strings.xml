@@ -20,4 +20,8 @@
     <string name="warnOnQuickSwitch">请至少等待1帧处理完再停止测试</string>
     <string name="RunTimesInfo">运行次数    ：</string>
     <string name="loadModel">加载新模型</string>
+    <string name="loadFail">加载文件时出错</string>
+    <string name="loadFailContent">加载模型时出错，请检查你选择的文件。</string>
+    <string name="reselect">重新选择</string>
+    <string name="cancle">取消</string>
 </resources>
