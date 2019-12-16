@@ -21,8 +21,7 @@ public class modelUtils {
         this.OUTPUT_TYPE = OUTPUT_TYPE;
     }
 
-    public void setModel(String MODEL_PATH,String INPUT_NAME,String OUTPUT_NAME,String OUTPUT_TYPE, int Resize_Para){
-        this.MODEL_PATH = MODEL_PATH;
+    public void setModel(String INPUT_NAME,String OUTPUT_NAME,String OUTPUT_TYPE, int Resize_Para){
         this.INPUT_NAME = INPUT_NAME;
         this.OUTPUT_NAME = OUTPUT_NAME;
         this.Resize_Para = Resize_Para;

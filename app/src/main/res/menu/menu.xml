@@ -1,13 +1,15 @@
 <?xml version ="1.0" encoding ="utf-8"?><!--  Learn More about how to use App Actions: https://developer.android.com/guide/actions/index.html -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/VGG16"
-        android:title="@string/VGG16"/>
-    <item android:id="@+id/GoogleNet"
-        android:title="@string/GoogleNet" />
-    <item android:id="@+id/ICPv2"
-        android:title="@string/ICPv2" />
-    <item android:id="@+id/ResNet50"
-        android:title="@string/ResNet50" />
+    <!--<item android:id="@+id/VGG16"-->
+        <!--android:title="@string/VGG16"/>-->
+    <!--<item android:id="@+id/GoogleNet"-->
+        <!--android:title="@string/GoogleNet" />-->
+    <!--<item android:id="@+id/ICPv2"-->
+        <!--android:title="@string/ICPv2" />-->
+    <!--<item android:id="@+id/ResNet50"-->
+        <!--android:title="@string/ResNet50" />-->
     <item android:id="@+id/loadModel"
         android:title="@string/loadModel" />
+    <item android:id="@+id/setPara"
+        android:title="@string/setPara" />
 </menu>

@@ -26,4 +26,5 @@
     <string name="loadFailContent">Fail to load Tensorflow model, please check the file you selected.</string>
     <string name="reselect">Reselect</string>
     <string name="cancle">cancle</string>
+    <string name="setPara">Set the parameter</string>
 </resources>

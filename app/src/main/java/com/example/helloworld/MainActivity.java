@@ -6,23 +6,31 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,12 +43,12 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
 
@@ -231,12 +239,18 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
-
-                //此处显示请求不通过的信息
-                Toast.makeText(this,"请提供摄像头权限以继续",Toast.LENGTH_SHORT);
+                AlertDialog.Builder loadDialog = new AlertDialog.Builder(this);
+                loadDialog.setTitle(R.string.loadFail);
+                loadDialog.setMessage("请提供摄像头权限以继续");
+                loadDialog.setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        System.exit(-1);
+                    }
+                });
+                loadDialog.show();
             } else {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA},
@@ -244,12 +258,19 @@ public class MainActivity extends AppCompatActivity {
                 // requestPermissions的最后一个是个自定义用于识别请求到的权限的整型值
             }
         }
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
-
-                //此处显示请求不通过的信息
-                Toast.makeText(this,"请提供存储权限以继续",Toast.LENGTH_SHORT);
+                AlertDialog.Builder loadDialog = new AlertDialog.Builder(this);
+                loadDialog.setTitle(R.string.loadFail);
+                loadDialog.setMessage("请提供存储权限以继续");
+                loadDialog.setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        System.exit(-1);
+                    }
+                });
+                loadDialog.show();
             } else {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
@@ -275,60 +296,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        String MODEL_PATH = "";
         doIt = false;
         switch (item.getItemId()) {
-//            case R.id.loadModel:
-
-            case R.id.VGG16:
-                Toast.makeText(this, R.string.VGG16, Toast.LENGTH_LONG).show();
-                model.setModel(modelUtils.VGG_PATH,"input_2","output_1","traditional",224);
+            case R.id.loadModel:
+                selectFile();
                 break;
-            case R.id.ICPv2:
-                Toast.makeText(this, "InceptionV2 Loaded", Toast.LENGTH_LONG).show();
-                MODEL_PATH = ICPv2_PATH;
-                INPUT_NAME = "Placeholder";
-                OUTPUT_NAME = "Softmax";
-                break;
-            case R.id.GoogleNet:
-                Toast.makeText(this, R.string.GoogleNet, Toast.LENGTH_LONG).show();
-                MODEL_PATH = Google_PATH;
-                INPUT_NAME = "input_1";
-                OUTPUT_NAME = "output_1";
-                break;
-            case R.id.ResNet50:
-                Toast.makeText(this, R.string.ResNet50, Toast.LENGTH_LONG).show();
-                MODEL_PATH = ResNet50_PATH;
-                INPUT_NAME = "input_2";
-                OUTPUT_NAME = "output_1";
-                break;
-
-
+            case R.id.setPara:
+                selectPara();
             default:
                 break;
-        }
-        tf.close();
-        try{
-            tf = loadTFModel(getAssets(),model.MODEL_PATH);
-        }catch(RuntimeException e){
-            Log.e("RuntimeException", "Tensorflow Model: Failed to load " );
-        }finally {
-            AlertDialog.Builder loadDialog = new AlertDialog.Builder(this);
-            loadDialog.setTitle(R.string.loadFail);
-            loadDialog.setMessage(R.string.loadFailContent);
-            loadDialog.setPositiveButton(R.string.reselect, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    //调用文件选择器
-                }
-            });
-            loadDialog.setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    System.exit(-1);
-                }
-            });
-            loadDialog.show();
         }
         return true;
     }
@@ -337,28 +313,106 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
 
         super.onResume();
+        if (mCamera == null) {
+            // Create an instance of Camera
+            mCamera = CameraActivity.openCamera();
 
-        // Create an instance of Camera
-        mCamera = CameraActivity.openCamera();
-
-        // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(this, mCamera);
-        if (mCamera != null) {
-            // 旋转方向
-            mCamera.setDisplayOrientation(90);
+            // Create our Preview view and set it as the content of our activity.
+            mPreview = new CameraPreview(this, mCamera);
+            if (mCamera != null) {
+                // 旋转方向
+                mCamera.setDisplayOrientation(90);
+            }
+            FrameLayout preview = findViewById(R.id.camera_preview);
+            preview.addView(mPreview);
+            mCamera.startPreview();
+            safeToTakePic = true;
+            //安卓不能在操作UI的时候写死循环，要另开线程操作
+            new Monitor().start();
         }
-        FrameLayout preview = findViewById(R.id.camera_preview);
-        preview.addView(mPreview);
-        mCamera.startPreview();
-        safeToTakePic = true;
-        tf = loadTFModel(getAssets(),model.MODEL_PATH);
-        long threadId=Thread.currentThread().getId();
-        Log.d("Info", "Thread: " + threadId);
-        //安卓不能在操作UI的时候写死循环，要另开线程操作
-        new Monitor().start();
 
     }
 
+    private void selectPara(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("请先选择模型参数");
+        //    指定下拉列表的显示数据
+        final String[] cities = {"VGG", "InterceptionV2", "GoogleNet", "ResNet50"};
+        //    设置一个下拉的列表选择项
+        builder.setItems(cities, new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                Toast.makeText(MainActivity.this, "加载参数：" + cities[which], Toast.LENGTH_SHORT).show();
+                switch (which){
+                    case 0:
+                        model.setModel("input_2","output_1","traditional",224);
+                        break;
+                    case 1:
+                        model.setModel("Placeholder","Softmax","traditional",224);
+                        break;
+                    case 2:
+                        model.setModel("input_1","output_1","New",229);
+                        break;
+                    case 3:
+                        model.setModel("input_2","output_1","traditional",224);
+                        break;
+                }
+                try{
+                    if(tf != null){
+                        tf.close();
+                    }
+                    tf = loadTFModel(getAssets(),model.MODEL_PATH);
+                }catch(RuntimeException e){
+                    e.printStackTrace();
+                }finally {
+                    AlertDialog.Builder loadDialog = new AlertDialog.Builder(MainActivity.this);
+                    loadDialog.setTitle(R.string.loadFail);
+                    loadDialog.setMessage(R.string.loadFailContent);
+                    loadDialog.setPositiveButton(R.string.reselect, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            selectFile();
+                        }
+                    });
+                    loadDialog.setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            System.exit(-1);
+                        }
+                    });
+                    loadDialog.show();
+                }
+            }
+        });
+        builder.show();
+        Log.d("Current Parameter", "selectPara: " + model.MODEL_PATH);
+    }
+
+    private void selectFile(){
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent,1);
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {//是否选择，没选择就不会继续
+            Uri uri = data.getData();
+            model.MODEL_PATH = getPath(this,uri);
+            try {
+                Object is = new FileInputStream(model.MODEL_PATH);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            Log.d("loadModel", "file path: " + model.MODEL_PATH);
+            selectPara();
+        }
+    }
 
     @Override
     protected void onPause() {
@@ -512,7 +566,7 @@ public class MainActivity extends AppCompatActivity {
     class Monitor extends Thread{
 
         int alertSender(int eventID, SoundPool soundPool, int[] sound, int signal) {
-            final TextView editText = findViewById(R.id.Situation);
+            final TextView  editText = findViewById(R.id.Situation);
             int color = MainActivity.this.getResources().getColor(R.color.dangerDirve);
             // The most severe event should have the highest priority. currently this function is not functioning
             switch (eventID) {
@@ -595,7 +649,7 @@ public class MainActivity extends AppCompatActivity {
         // Production stage, delete this thing, and move useful things to onResume().
         doIt = !doIt;
         Log.d("Status", "switchSys: Value is: " + doIt);
-        if (doIt == false){
+        if (!doIt){
             try{
                 String displayText = "Average time consumed per round: " + statistic.getAvg();
                 Toast.makeText(this, displayText, Toast.LENGTH_LONG).show();
@@ -605,6 +659,131 @@ public class MainActivity extends AppCompatActivity {
             statistic.reset();
         }
     }
+
+    //处理文件选择器返回uri
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public static String getPath(final Context context, final Uri uri) {
+
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+
+                // TODO handle non-primary volumes
+            }
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                return getDataColumn(context, contentUri, null, null);
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[] {
+                        split[1]
+                };
+
+                return getDataColumn(context, contentUri, selection, selectionArgs);
+            }
+        }
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+            return getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the value of the data column for this Uri. This is useful for
+     * MediaStore Uris, and other file-based ContentProviders.
+     *
+     * @param context The context.
+     * @param uri The Uri to query.
+     * @param selection (Optional) Filter used in the query.
+     * @param selectionArgs (Optional) Selection arguments used in the query.
+     * @return The value of the _data column, which is typically a file path.
+     */
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is ExternalStorageProvider.
+     */
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is DownloadsProvider.
+     */
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is MediaProvider.
+     */
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
 }
+
+
 
 

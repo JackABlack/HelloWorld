@@ -24,4 +24,5 @@
     <string name="loadFailContent">加载模型时出错，请检查你选择的文件。</string>
     <string name="reselect">重新选择</string>
     <string name="cancle">取消</string>
+    <string name="setPara">设定参数</string>
 </resources>
