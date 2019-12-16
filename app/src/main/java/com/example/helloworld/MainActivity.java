@@ -214,12 +214,7 @@ public class MainActivity extends AppCompatActivity {
     int signal = 0;
     int eventID = 0;
     String situation;
-    private final String VGG_PATH = "file:///android_asset/vgg16net.pb";
-    private final String Google_PATH = "file:///android_asset/GoogleNet.pb";
-    private final String ICPv2_PATH = "file:///android_asset/InceptionV2.pb";
-    private final String ResNet50_PATH = "file:///android_asset/Resnet50.pb";
-    private String INPUT_NAME = "input_2";
-    private String OUTPUT_NAME = "output_1";
+    public modelUtils model = new modelUtils(modelUtils.VGG_PATH,"input_2","output_1","traditional",224);
     private TensorFlowInferenceInterface tf;
 
     //ARRAY TO HOLD THE PREDICTIONS AND FLOAT VALUES TO HOLD THE IMAGE DATA
@@ -311,8 +306,14 @@ public class MainActivity extends AppCompatActivity {
 
     //开始以及重新开始的时候查找相机
     protected void onResume() {
-
         super.onResume();
+        startCamera();
+        tf = loadTFModel(getAssets(),"file:///android_asset/vgg16net.pb");
+        //安卓不能在操作UI的时候写死循环，要另开线程操作
+        new Monitor().start();
+    }
+
+    private void startCamera() {
         if (mCamera == null) {
             // Create an instance of Camera
             mCamera = CameraActivity.openCamera();
@@ -327,10 +328,7 @@ public class MainActivity extends AppCompatActivity {
             preview.addView(mPreview);
             mCamera.startPreview();
             safeToTakePic = true;
-            //安卓不能在操作UI的时候写死循环，要另开线程操作
-            new Monitor().start();
         }
-
     }
 
     private void selectPara(){
@@ -353,37 +351,39 @@ public class MainActivity extends AppCompatActivity {
                         model.setModel("Placeholder","Softmax","traditional",224);
                         break;
                     case 2:
-                        model.setModel("input_1","output_1","New",229);
+                        model.setModel("input_1","output_1","New",299);
                         break;
                     case 3:
                         model.setModel("input_2","output_1","traditional",224);
                         break;
                 }
-                try{
+//                try{
                     if(tf != null){
                         tf.close();
                     }
                     tf = loadTFModel(getAssets(),model.MODEL_PATH);
-                }catch(RuntimeException e){
-                    e.printStackTrace();
-                }finally {
-                    AlertDialog.Builder loadDialog = new AlertDialog.Builder(MainActivity.this);
-                    loadDialog.setTitle(R.string.loadFail);
-                    loadDialog.setMessage(R.string.loadFailContent);
-                    loadDialog.setPositiveButton(R.string.reselect, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            selectFile();
-                        }
-                    });
-                    loadDialog.setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            System.exit(-1);
-                        }
-                    });
-                    loadDialog.show();
-                }
+                Log.d("操你妈了个逼的安卓傻逼项目", "onClick: " + model.INPUT_NAME + model.Resize_Para);
+                    startCamera();
+//                }catch(RuntimeException e){
+//                    e.printStackTrace();
+//                }finally {
+//                    AlertDialog.Builder loadDialog = new AlertDialog.Builder(MainActivity.this);
+//                    loadDialog.setTitle(R.string.loadFail);
+//                    loadDialog.setMessage(R.string.loadFailContent);
+//                    loadDialog.setPositiveButton(R.string.reselect, new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialogInterface, int i) {
+//                            selectFile();
+//                        }
+//                    });
+//                    loadDialog.setNegativeButton(R.string.cancle, new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialogInterface, int i) {
+//                            System.exit(-1);
+//                        }
+//                    });
+//                    loadDialog.show();
+//                }
             }
         });
         builder.show();
@@ -505,14 +505,19 @@ public class MainActivity extends AppCompatActivity {
             protected Integer doInBackground(Integer ...params){
                 long inTime = System.currentTimeMillis();
                 //Resize the image into 224 x 224 and rotate
-                Bitmap resized_image = ImageUtils.processBitmap(bitmap,224);
+                Bitmap resized_image = ImageUtils.processBitmap(bitmap,model.Resize_Para);
                 Bitmap rotated_image = ImageUtils.rotateBitmap(resized_image,90);
 
                 //Normalize the pixels
-                floatValues = ImageUtils.normalizeBitmap(rotated_image,224,127.5f,1.0f);
+                if(model.OUTPUT_TYPE.equals("New")){
+                    floatValues = ImageUtils.normalizeBitmap(rotated_image,model.Resize_Para,0.5f,0.5f,255);
+                }else{
+                    floatValues = ImageUtils.normalizeBitmap(rotated_image,model.Resize_Para,127.5f,1.0f,1);
+                }
+
 
                 //Pass input into the tensorflow
-                tf.feed(INPUT_NAME,floatValues,1,224,224,3);
+                tf.feed(model.INPUT_NAME,floatValues,1,224,224,3);
 
                 //compute predictions
                 tf.run(new String[]{model.OUTPUT_NAME});
@@ -649,7 +654,7 @@ public class MainActivity extends AppCompatActivity {
         // Production stage, delete this thing, and move useful things to onResume().
         doIt = !doIt;
         Log.d("Status", "switchSys: Value is: " + doIt);
-        if (!doIt){
+        if (doIt == false){
             try{
                 String displayText = "Average time consumed per round: " + statistic.getAvg();
                 Toast.makeText(this, displayText, Toast.LENGTH_LONG).show();
@@ -682,8 +687,10 @@ public class MainActivity extends AppCompatActivity {
             }
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
-
                 final String id = DocumentsContract.getDocumentId(uri);
+                if (id.startsWith("raw:")) {
+                    return id.replaceFirst("raw:", "");
+                }
                 final Uri contentUri = ContentUris.withAppendedId(
                         Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
 
