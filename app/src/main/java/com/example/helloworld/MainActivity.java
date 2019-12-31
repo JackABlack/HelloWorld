@@ -572,6 +572,11 @@ public class MainActivity extends AppCompatActivity {
             final TextView  editText = findViewById(R.id.Situation);
             int color = MainActivity.this.getResources().getColor(R.color.dangerDirve);
             // The most severe event should have the highest priority. currently this function is not functioning
+            if(model.OUTPUT_TYPE.equals("new")){
+                if (eventID == 3) {
+                    eventID = 5;
+                }
+            }
             switch (eventID) {
                 case 0:
                     color = MainActivity.this.getResources().getColor(R.color.safeDrive);
