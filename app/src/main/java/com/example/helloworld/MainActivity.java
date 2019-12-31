@@ -6,7 +6,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
@@ -214,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
     int signal = 0;
     int eventID = 0;
     String situation;
-    public modelUtils model = new modelUtils(modelUtils.VGG_PATH,"input_2","output_1","traditional",224);
+    public modelUtils model = new modelUtils(modelUtils.ResNet50_PATH,"input_2","output_1","traditional",224);
     private TensorFlowInferenceInterface tf;
 
     //ARRAY TO HOLD THE PREDICTIONS AND FLOAT VALUES TO HOLD THE IMAGE DATA
@@ -308,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         startCamera();
-        tf = loadTFModel(getAssets(),"file:///android_asset/vgg16net.pb");
+        tf = loadTFModel(getAssets(),model.MODEL_PATH);
         //安卓不能在操作UI的时候写死循环，要另开线程操作
         new Monitor().start();
     }
@@ -362,7 +361,6 @@ public class MainActivity extends AppCompatActivity {
                         tf.close();
                     }
                     tf = loadTFModel(getAssets(),model.MODEL_PATH);
-                Log.d("操你妈了个逼的安卓傻逼项目", "onClick: " + model.INPUT_NAME + model.Resize_Para);
                     startCamera();
 //                }catch(RuntimeException e){
 //                    e.printStackTrace();
@@ -517,7 +515,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 //Pass input into the tensorflow
-                tf.feed(model.INPUT_NAME,floatValues,1,224,224,3);
+                tf.feed(model.INPUT_NAME,floatValues,1,model.Resize_Para,model.Resize_Para,3);
 
                 //compute predictions
                 tf.run(new String[]{model.OUTPUT_NAME});

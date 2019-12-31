@@ -7,11 +7,11 @@ public class modelUtils {
     public static final String ICPv2_PATH = "file:///android_asset/InceptionV2.pb";
     public static final String ResNet50_PATH = "file:///android_asset/Resnet50.pb";
 
-    public String MODEL_PATH;
-    public String INPUT_NAME;
-    public String OUTPUT_NAME;
-    public int Resize_Para;
-    public String OUTPUT_TYPE;
+    public String MODEL_PATH;   //模型地址
+    public String INPUT_NAME;   //模型输入层名字
+    public String OUTPUT_NAME;  //模型输出层名字
+    public int Resize_Para;     //模型输入图像大小
+    public String OUTPUT_TYPE;  //模型是四输出还是六输出（左右手是否分别输出），可用值为 traditional（6） new（4），参见MainActicity.java 569行 Monitor 类
 
     public modelUtils(String MODEL_PATH,String INPUT_NAME,String OUTPUT_NAME,String OUTPUT_TYPE, int Resize_Para){
         this.MODEL_PATH = MODEL_PATH;
